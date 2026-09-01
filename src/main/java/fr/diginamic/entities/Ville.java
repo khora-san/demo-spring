@@ -2,6 +2,8 @@ package fr.diginamic.entities;
 
 public class Ville {
 
+  private static int autoIncrementId = 1;
+
   private Integer id;
   private String nom;
   private int population;
@@ -15,7 +17,6 @@ public class Ville {
     this.nom = nom;
     this.population = population;
   }
-
 
   public String getNom() {
     return nom;
@@ -33,12 +34,12 @@ public class Ville {
     this.population = population;
   }
 
-  public int getId() {
-    return id;
+  public void creerId() {
+    this.id = autoIncrementId++;
   }
 
-  public void setId(Integer id) {
-    this.id = id;
+  public Integer getId() {
+    return id;
   }
 
 }
