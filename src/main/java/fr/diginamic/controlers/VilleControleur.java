@@ -3,12 +3,15 @@ package fr.diginamic.controlers;
 import fr.diginamic.entities.Ville;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,10 +30,9 @@ public class VilleControleur {
 
   private final List<Ville> villes = new ArrayList<>();
 
-
   private void insererVille(@NonNull Ville ville) {
-    ville.creerId();
-    villes.add(ville);
+    ville.creerId(); //todo : disparaîtra avec JPA — l'id sera généré par la base via @GeneratedValue
+    villes.add(ville); //todo : ira dans la couche Repository (Repository.save())
   }
 
   //todo : ira dans la couche Repository
@@ -40,21 +42,13 @@ public class VilleControleur {
         .findFirst();
   }
 
-  //todo : ira dans la couche Service (règle métier)
+  //todo : ira dans la couche Repository (Spring Data sait générer ça automatiquement : existsByNom)
   public boolean existsByNom(String nom) {
     return villes.stream()
         .anyMatch(v -> v.getNom().equals(nom));
   }
 
-  public void verifierVille(Ville ville) throws ExceptionFonctionnelle {
-    if (ville.getPopulation() < 10) {
-      throw new ExceptionFonctionnelle("La population doit être supérieure ou égale à 10");
-    }
-    if (ville.getNom().length() < 2) {
-      throw new ExceptionFonctionnelle("Le nom doit contenir au moins 2 lettres");
-    }
-  }
-
+  //todo : deviendra un jeu de données de test (data.sql ou CommandLineRunner) plutôt qu'une méthode du contrôleur
   @PostConstruct
   public void initData() {
     insererVille(new Ville(null, "Lille", 233098));
@@ -64,7 +58,7 @@ public class VilleControleur {
 
   @GetMapping
   public List<Ville> getVilles() {
-    return this.villes;
+    return this.villes; //todo : appellera repository.findAll()
   }
 
   @GetMapping("/{id}")
@@ -80,10 +74,10 @@ public class VilleControleur {
       throws ExceptionFonctionnelle {
     List<Ville> resultats = villes.stream()
         .filter(v -> v.getNom().toUpperCase().startsWith(nom.toUpperCase()))
-        .toList();
+        .toList(); //todo : ira dans la couche Repository (ex. findByNomStartingWithIgnoreCase)
 
     if (resultats.isEmpty()) {
-      throw new ExceptionFonctionnelle(
+      throw new ExceptionFonctionnelle( //todo : ira dans la couche Service (règle métier : que faire si aucun résultat)
           "Aucune ville dont le nom commence par " + nom + " n’a été trouvée");
     }
     return ResponseEntity.ok(resultats);
@@ -94,10 +88,10 @@ public class VilleControleur {
       throws ExceptionFonctionnelle {
     List<Ville> resultats = villes.stream()
         .filter(v -> v.getPopulation() > min)
-        .toList();
+        .toList(); //todo : ira dans la couche Repository (ex. findByPopulationGreaterThan)
 
     if (resultats.isEmpty()) {
-      throw new ExceptionFonctionnelle(
+      throw new ExceptionFonctionnelle( //todo : ira dans la couche Service
           " Aucune ville n’a une population supérieure à " + min);
     }
     return ResponseEntity.ok(resultats);
@@ -108,35 +102,48 @@ public class VilleControleur {
       throws ExceptionFonctionnelle {
     List<Ville> resultats = villes.stream()
         .filter(v -> v.getPopulation() > min && v.getPopulation() < max)
-        .toList();
+        .toList(); //todo : ira dans la couche Repository (ex. findByPopulationBetween)
 
     if (resultats.isEmpty()) {
-      throw new ExceptionFonctionnelle(
+      throw new ExceptionFonctionnelle( //todo : ira dans la couche Service
           "Aucune ville n’a une population comprise entre " + min + " et " + max);
     }
     return ResponseEntity.ok(resultats);
   }
 
-
   @PostMapping
-  public ResponseEntity<String> addVille(@RequestBody Ville ville) throws ExceptionFonctionnelle {
-    if (existsByNom(ville.getNom())) {
-      return ResponseEntity.badRequest().body("La ville existe déjà");
+  public ResponseEntity<String> addVille(@Valid @RequestBody Ville ville, BindingResult result)
+    //todo : Ville (en paramètre) pourrait devenir un DTO dédié (VilleDto), pour découpler le contrat d'API du modèle de données
+      throws ExceptionFonctionnelle {
+    if (result.hasErrors()) { //todo : reste probablement à la frontière Controller (validation de la requête HTTP entrante)
+      String message = result.getFieldErrors().stream()
+          .map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
+          .collect(Collectors.joining(", "));
+      throw new ExceptionFonctionnelle(message);
     }
-    verifierVille(ville);
+    if (existsByNom(ville.getNom())) {
+      return ResponseEntity.badRequest().body(
+          "La ville existe déjà"); //todo : ira dans la couche Service (règle métier de doublon)
+    }
     insererVille(ville);
-
     return ResponseEntity.ok("Ville insérée avec succès");
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<?> putVilleById(@PathVariable int id, @RequestBody Ville ville)
+  public ResponseEntity<?> putVilleById(@PathVariable int id, @Valid @RequestBody Ville ville,
+      BindingResult result)
       throws ExceptionFonctionnelle {
-    verifierVille(ville);
+    if (result.hasErrors()) {
+      String message = result.getFieldErrors().stream()
+          .map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
+          .collect(Collectors.joining(", "));
+      throw new ExceptionFonctionnelle(message);
+    }
     return findById(id)
         .<ResponseEntity<?>>map(v -> {
           v.setNom(ville.getNom());
-          v.setPopulation(ville.getPopulation());
+          v.setPopulation(
+              ville.getPopulation()); //todo : ira dans la couche Service (logique de mise à jour)
           return ResponseEntity.ok(v);
         })
         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -147,9 +154,9 @@ public class VilleControleur {
   public ResponseEntity<?> deleteVilleById(@PathVariable int id) {
     return findById(id)
         .<ResponseEntity<?>>map(v -> {
-          villes.remove(v);
+          villes.remove(v); //todo : ira dans la couche Repository (Repository.delete())
           return ResponseEntity.ok(Map.of("message", "Ville supprimée avec succès", "ville", v));
-          //Map.of pour combiner code 200 body+text
+          //todo : ce corps de réponse pourrait devenir un DTO dédié (ex. record SuppressionResponse) au lieu d'une Map
         })
         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body("La ville n'a pas été trouvée."));

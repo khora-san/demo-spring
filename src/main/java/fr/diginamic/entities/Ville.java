@@ -1,11 +1,19 @@
 package fr.diginamic.entities;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class Ville {
 
   private static int autoIncrementId = 1;
 
   private Integer id;
+  @NotBlank(message = "Le nom de la ville ne doit pas être vide")
+  @Size(min = 2, message = "Le nom de la ville doit posséder au moins 2 caractères")
   private String nom;
+
+  @Min(value = 1, message = "Le nombre d'habitants ne peut pas être zéro")
   private int population;
 
 
