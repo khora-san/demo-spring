@@ -112,15 +112,9 @@ public class VilleControleur implements VilleControleurDoc {
   }
 
   @PostMapping
-  public ResponseEntity<String> addVille(@Valid @RequestBody Ville ville, BindingResult result)
-    //todo : Ville (en paramètre) pourrait devenir un DTO dédié (VilleDto), pour découpler le contrat d'API du modèle de données
-      throws ExceptionFonctionnelle {
-    if (result.hasErrors()) { //todo : reste probablement à la frontière Controller (validation de la requête HTTP entrante)
-      String message = result.getFieldErrors().stream()
-          .map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
-          .collect(Collectors.joining(", "));
-      throw new ExceptionFonctionnelle(message);
-    }
+  public ResponseEntity<String> addVille(@Valid @RequestBody Ville ville)
+  //todo : Ville (en paramètre) pourrait devenir un DTO dédié (VilleDto), pour découpler le contrat d'API du modèle de données
+  {
     if (existsByNom(ville.getNom())) {
       return ResponseEntity.badRequest().body(
           "La ville existe déjà"); //todo : ira dans la couche Service (règle métier de doublon)
@@ -130,15 +124,7 @@ public class VilleControleur implements VilleControleurDoc {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<?> putVilleById(@PathVariable int id, @Valid @RequestBody Ville ville,
-      BindingResult result)
-      throws ExceptionFonctionnelle {
-    if (result.hasErrors()) {
-      String message = result.getFieldErrors().stream()
-          .map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
-          .collect(Collectors.joining(", "));
-      throw new ExceptionFonctionnelle(message);
-    }
+  public ResponseEntity<?> putVilleById(@PathVariable int id, @Valid @RequestBody Ville ville) {
     return findById(id)
         .<ResponseEntity<?>>map(v -> {
           v.setNom(ville.getNom());

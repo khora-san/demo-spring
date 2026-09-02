@@ -1,7 +1,6 @@
 package fr.diginamic.controlers;
 
 import fr.diginamic.entities.Ville;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 
 public interface VilleControleurDoc {
 
@@ -43,7 +41,7 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "400",
           description = "Données invalides ou ville déjà existante", content = @Content())
   })
-  ResponseEntity<String> addVille(Ville ville, BindingResult result) throws ExceptionFonctionnelle;
+  ResponseEntity<String> addVille(Ville ville);
 
   @Operation(summary = "Modifie une ville existante à partir de son identifiant")
   @ApiResponses(value = {
@@ -55,8 +53,7 @@ public interface VilleControleurDoc {
   })
   ResponseEntity<?> putVilleById(
       @Parameter(description = "Identifiant de la ville à modifier", example = "3", required = true) int id,
-      Ville ville, BindingResult result)
-      throws ExceptionFonctionnelle;
+      Ville ville);
 
   @Operation(summary = "Supprime une ville existante à partir de son identifiant")
   @ApiResponses(value = {
