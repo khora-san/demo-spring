@@ -1,13 +1,19 @@
 package fr.diginamic.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@Entity
 public class Ville {
 
-  private static int autoIncrementId = 1;
-
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
   @NotBlank(message = "Le nom de la ville ne doit pas être vide")
   @Size(min = 2, message = "Le nom de la ville doit posséder au moins 2 caractères")
@@ -15,6 +21,9 @@ public class Ville {
 
   @Min(value = 1, message = "Le nombre d'habitants ne peut pas être zéro")
   private int population;
+
+  @ManyToOne
+  private Departement departement;
 
 
   public Ville() {
@@ -42,12 +51,15 @@ public class Ville {
     this.population = population;
   }
 
-  public void creerId() {
-    this.id = autoIncrementId++;
-  }
-
   public Integer getId() {
     return id;
   }
 
+  public Departement getDepartement() {
+    return departement;
+  }
+
+  public void setDepartement(Departement departement) {
+    this.departement = departement;
+  }
 }

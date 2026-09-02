@@ -31,7 +31,7 @@ public class VilleControleur implements VilleControleurDoc {
   private final List<Ville> villes = new ArrayList<>();
 
   private void insererVille(@NonNull Ville ville) {
-    ville.creerId(); //todo : disparaîtra avec JPA — l'id sera généré par la base via @GeneratedValue
+    //ville.creerId(); //todo : disparaîtra avec JPA — l'id sera généré par la base via @GeneratedValue
     villes.add(ville); //todo : ira dans la couche Repository (Repository.save())
   }
 
