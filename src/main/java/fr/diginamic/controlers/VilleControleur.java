@@ -26,7 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/villes")
-public class VilleControleur {
+public class VilleControleur implements VilleControleurDoc {
 
   private final List<Ville> villes = new ArrayList<>();
 
