@@ -46,7 +46,7 @@ public class VilleDao {
    * @return la liste des villes correspondantes (éventuellement vide)
    */
   public List<Ville> findVillesByNomPrefixe(String prefixe) {
-    TypedQuery<Ville> query = em.createQuery("SELECT v FROM Ville v WHERE v.nom LIKE :prefixe",
+    TypedQuery<Ville> query = em.createQuery("SELECT v FROM Ville v WHERE LOWER(v.nom) LIKE LOWER(:prefixe)",
             Ville.class)
         .setParameter("prefixe", prefixe + "%");
     return query.getResultList();
