@@ -6,6 +6,9 @@ import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.mapper.VilleMapper;
 import fr.diginamic.services.VilleService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,10 +36,11 @@ public class VilleControleur implements VilleControleurDoc {
 
   @Override
   @GetMapping
-  public ResponseEntity<List<VilleDto>> getVilles() {
-    List<VilleDto> villesDto = villeService.extractVilles().stream()
-        .map(villeMapper::toDto)
-        .toList();
+  public ResponseEntity<Page<VilleDto>> getVilles(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    Page<VilleDto> villesDto = villeService.extractVilles(pageable).map(villeMapper::toDto);
     return ResponseEntity.ok(villesDto);
   }
 
@@ -85,6 +89,17 @@ public class VilleControleur implements VilleControleurDoc {
     List<VilleDto> villesDto = villeService.extractTopVillesByDepartementCode(code, n).stream()
         .map(villeMapper::toDto)
         .toList();
+    return ResponseEntity.ok(villesDto);
+  }
+
+  @Override
+  @GetMapping(value = "/recherche", params = {"code", "min", "!max", "!n"})
+  public ResponseEntity<List<VilleDto>> getVillesByPopulationSuperieureAndDepartementCode(
+      @RequestParam String code, @RequestParam int min) throws ExceptionFonctionnelle {
+    List<VilleDto> villesDto =
+        villeService.extractVillesByPopulationSuperieureAndDepartementCode(code, min).stream()
+            .map(villeMapper::toDto)
+            .toList();
     return ResponseEntity.ok(villesDto);
   }
 

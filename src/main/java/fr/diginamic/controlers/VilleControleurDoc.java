@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -31,7 +32,7 @@ public interface VilleControleurDoc {
           content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
           @Schema(implementation = VilleDto.class)))})
   })
-  ResponseEntity<List<VilleDto>> getVilles();
+  ResponseEntity<Page<VilleDto>> getVilles(int page, int size);
 
   /**
    * Retourne la ville correspondant à l'identifiant donné.
@@ -160,6 +161,28 @@ public interface VilleControleurDoc {
       @Parameter(description = "Code du département concerné", example = "34", required = true) String code,
       @Parameter(description = "Population minimale", example = "1000", required = true) int min,
       @Parameter(description = "Population maximale", example = "50000", required = true) int max)
+      throws ExceptionFonctionnelle;
+
+  /**
+   * Recherche les villes d'un département dont la population est strictement supérieure à un seuil
+   * donné, triées par population décroissante.
+   *
+   * @param code code du département concerné
+   * @param min  population minimale (strictement)
+   * @return la liste des villes correspondantes
+   * @throws ExceptionFonctionnelle si le département n'existe pas ou si aucune ville ne correspond
+   */
+  @Operation(summary = "Rechercher les villes d'un département par population minimale",
+      description = "Retourne les villes du département dont la population est strictement "
+          + "supérieure au seuil donné, triées par population décroissante.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Liste des villes correspondantes"),
+      @ApiResponse(responseCode = "404",
+          description = "Département inconnu ou aucune ville correspondante")
+  })
+  ResponseEntity<List<VilleDto>> getVillesByPopulationSuperieureAndDepartementCode(
+      @Parameter(description = "Code du département concerné") String code,
+      @Parameter(description = "Population minimale (strictement)") int min)
       throws ExceptionFonctionnelle;
 
   /**

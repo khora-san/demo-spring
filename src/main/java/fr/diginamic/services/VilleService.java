@@ -1,43 +1,50 @@
 package fr.diginamic.services;
 
-import fr.diginamic.dao.VilleDao;
 import fr.diginamic.entities.Departement;
 import fr.diginamic.entities.Ville;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.repository.VilleRepository;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service métier pour la gestion des villes.
  * <p>
- * Cette classe centralise les règles métier (unicité du nom, existence d'une ville) et orchestre
- * les appels à {@link VilleDao}, seule classe autorisée à dialoguer avec l'{@code EntityManager}.
+ * Cette classe centralise les règles métier (unicité du nom, existence d'une ville, résolution du
+ * département associé) et orchestre les appels à {@link VilleRepository}, l'interface Spring Data
+ * JPA qui gère l'accès aux données des villes.
  */
 @Service
 public class VilleService {
 
-  private final VilleDao villeDao;
+  private final VilleRepository villeRepository;
   private final DepartementService departementService;
 
   /**
-   * Construit le service en lui injectant sa dépendance vers le DAO.
+   * Construit le service en lui injectant ses dépendances.
    *
-   * @param villeDao           le DAO utilisé pour accéder aux données des villes
-   * @param departementService le Service utilisé pour
+   * @param villeRepository    le repository Spring Data JPA utilisé pour accéder aux données des
+   *                           villes
+   * @param departementService le service utilisé pour résoudre ou créer le département associé à
+   *                           une ville
    */
-  public VilleService(VilleDao villeDao, DepartementService departementService) {
-    this.villeDao = villeDao;
+  public VilleService(VilleRepository villeRepository, DepartementService departementService) {
+    this.villeRepository = villeRepository;
     this.departementService = departementService;
   }
 
   /**
-   * Extrait toutes les villes présentes en base.
+   * Extrait les villes présentes en base, de façon paginée.
    *
-   * @return la liste de toutes les villes
+   * @param pageable les paramètres de pagination (numéro de page, taille, tri)
+   * @return la page de villes correspondante
    */
-  public List<Ville> extractVilles() {
-    return villeDao.findVilles();
+  public Page<Ville> extractVilles(Pageable pageable) {
+    return villeRepository.findAll(pageable);
   }
 
   /**
@@ -48,11 +55,8 @@ public class VilleService {
    * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
    */
   public Ville extractVille(int id) throws ExceptionFonctionnelle {
-    Ville ville = villeDao.findById(id);
-    if (ville == null) {
-      throw new ExceptionFonctionnelle("Ville non trouvée");
-    }
-    return ville;
+    return villeRepository.findById(id)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Ville non trouvée"));
   }
 
   /**
@@ -63,7 +67,7 @@ public class VilleService {
    * @throws ExceptionFonctionnelle si aucune ville ne correspond au préfixe
    */
   public List<Ville> extractVillesByNameStartWith(String prefixe) throws ExceptionFonctionnelle {
-    List<Ville> villes = villeDao.findVillesByNomPrefixe(prefixe);
+    List<Ville> villes = villeRepository.findByNomStartingWith(prefixe);
     if (villes.isEmpty()) {
       throw new ExceptionFonctionnelle("Aucune ville correspondante");
     }
@@ -71,14 +75,15 @@ public class VilleService {
   }
 
   /**
-   * Extrait les villes dont la population est strictement supérieure au minimum donné.
+   * Extrait les villes dont la population est strictement supérieure au minimum donné, triées par
+   * population décroissante.
    *
    * @param min le seuil minimum de population (exclu)
-   * @return la liste des villes correspondantes
+   * @return la liste des villes correspondantes, triées par population décroissante
    * @throws ExceptionFonctionnelle si aucune ville ne dépasse ce seuil
    */
   public List<Ville> extractVillesByPopulationSuperieure(int min) throws ExceptionFonctionnelle {
-    List<Ville> villes = villeDao.findVillesByPopulationSuperieure(min);
+    List<Ville> villes = villeRepository.findByPopulationGreaterThanOrderByPopulationDesc(min);
     if (villes.isEmpty()) {
       throw new ExceptionFonctionnelle("Aucune ville correspondante");
     }
@@ -86,16 +91,19 @@ public class VilleService {
   }
 
   /**
-   * Extrait les villes dont la population est comprise entre les bornes données.
+   * Extrait les villes dont la population est strictement comprise entre les bornes données, triées
+   * par population décroissante.
    *
-   * @param min la population minimum
-   * @param max la population maximum
-   * @return la liste des villes correspondantes
+   * @param min la population minimum (exclue)
+   * @param max la population maximum (exclue)
+   * @return la liste des villes correspondantes, triées par population décroissante
    * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet intervalle
    */
   public List<Ville> extractVillesByPopulationEntre(int min, int max)
       throws ExceptionFonctionnelle {
-    List<Ville> villes = villeDao.findVillesByPopulationEntre(min, max);
+    List<Ville> villes =
+        villeRepository.findByPopulationGreaterThanAndPopulationLessThanOrderByPopulationDesc(min,
+            max);
     if (villes.isEmpty()) {
       throw new ExceptionFonctionnelle("Aucune ville correspondante");
     }
@@ -103,7 +111,7 @@ public class VilleService {
   }
 
   /**
-   * Extrait les n premières villes (par population décroissante) d'un département donné
+   * Extrait les n premières villes (par population décroissante) d'un département donné.
    *
    * @param code le code du département
    * @param n    le nombre de villes affichées
@@ -114,7 +122,8 @@ public class VilleService {
   public List<Ville> extractTopVillesByDepartementCode(String code, int n)
       throws ExceptionFonctionnelle {
     departementService.extractDepartementByCode(code);
-    List<Ville> villes = villeDao.findTopVillesByDepartementCode(code, n);
+    List<Ville> villes = villeRepository.findByDepartementCodeOrderByPopulationDesc(code,
+        PageRequest.of(0, n));
     if (villes.isEmpty()) {
       throw new ExceptionFonctionnelle("Aucune ville trouvée pour ce département");
     }
@@ -122,19 +131,43 @@ public class VilleService {
   }
 
   /**
-   * Extrait les villes dont la population est entre un min et un max, pour un département donné
+   * Extrait les villes d'un département dont la population est supérieure à un seuil donné, triées
+   * par population décroissante.
+   *
+   * @param code code du département
+   * @param min  population minimale (strictement)
+   * @return la liste des villes correspondantes
+   * @throws ExceptionFonctionnelle si le département n'existe pas ou si aucune ville ne correspond
+   */
+  public List<Ville> extractVillesByPopulationSuperieureAndDepartementCode(String code, int min)
+      throws ExceptionFonctionnelle {
+    departementService.extractDepartementByCode(code);
+    List<Ville> villes =
+        villeRepository.findByDepartementCodeAndPopulationGreaterThanOrderByPopulationDesc(code,
+            min);
+    if (villes.isEmpty()) {
+      throw new ExceptionFonctionnelle("Aucune ville trouvée pour ce département");
+    }
+    return villes;
+  }
+
+  /**
+   * Extrait les villes dont la population est strictement comprise entre un min et un max, pour un
+   * département donné, triées par population décroissante.
    *
    * @param code le code du département
-   * @param min  la population minimum
-   * @param max  la population maximum
-   * @return la liste des villes correspondantes
+   * @param min  la population minimum (exclue)
+   * @param max  la population maximum (exclue)
+   * @return la liste des villes correspondantes, triées par population décroissante
    * @throws ExceptionFonctionnelle si le code de département est invalide, ou si aucune ville n'est
    *                                trouvée pour ces critères
    */
-  public List<Ville> extractVillesByPopulationEntreAndDepartementCode(String code, int min, int max)
-      throws ExceptionFonctionnelle {
+  public List<Ville> extractVillesByPopulationEntreAndDepartementCode(String code, int min,
+      int max) throws ExceptionFonctionnelle {
     departementService.extractDepartementByCode(code);
-    List<Ville> villes = villeDao.findVillesByPopulationEntreAndDepartementCode(code, min, max);
+    List<Ville> villes =
+        villeRepository.findByDepartementCodeAndPopulationGreaterThanAndPopulationLessThanOrderByPopulationDesc(
+            code, min, max);
     if (villes.isEmpty()) {
       throw new ExceptionFonctionnelle("Aucune ville trouvée pour ce département");
     }
@@ -160,7 +193,7 @@ public class VilleService {
   @Transactional
   public List<Ville> insertVille(Ville ville, String codeDepartement, Integer idDepartement)
       throws ExceptionFonctionnelle {
-    if (villeDao.existsVilleByNom(ville.getNom())) {
+    if (villeRepository.existsByNom(ville.getNom())) {
       throw new ExceptionFonctionnelle("La ville existe déjà");
     }
     Departement departement = departementService.resolveDepartement(codeDepartement, idDepartement);
@@ -168,8 +201,8 @@ public class VilleService {
     nouvelleVille.setNom(ville.getNom());
     nouvelleVille.setPopulation(ville.getPopulation());
     nouvelleVille.setDepartement(departement);
-    villeDao.persist(nouvelleVille);
-    return villeDao.findVilles();
+    villeRepository.save(nouvelleVille);
+    return villeRepository.findAll();
   }
 
   /**
@@ -190,13 +223,15 @@ public class VilleService {
   @Transactional
   public List<Ville> modifierVille(int idVille, Ville villeModifiee, String codeDepartement,
       Integer idDepartement) throws ExceptionFonctionnelle {
-    if (villeDao.findById(idVille) == null) {
-      throw new ExceptionFonctionnelle("Ville non trouvée");
-    }
+    Ville villeExistante = villeRepository.findById(idVille)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Ville non trouvée"));
     Departement departement = departementService.resolveDepartement(codeDepartement, idDepartement);
-    villeModifiee.setDepartement(departement);
-    villeDao.merge(idVille, villeModifiee);
-    return villeDao.findVilles();
+    // Entité gérée par le contexte de persistance : la mise à jour des champs suffit, la
+    // synchronisation en base se fait par dirty-checking à la fin de la transaction.
+    villeExistante.setNom(villeModifiee.getNom());
+    villeExistante.setPopulation(villeModifiee.getPopulation());
+    villeExistante.setDepartement(departement);
+    return villeRepository.findAll();
   }
 
   /**
@@ -208,12 +243,9 @@ public class VilleService {
    */
   @Transactional
   public List<Ville> supprimerVille(int idVille) throws ExceptionFonctionnelle {
-    Ville ville = villeDao.findById(idVille);
-    if (ville == null) {
-      throw new ExceptionFonctionnelle("Ville non trouvée");
-    }
-    villeDao.remove(ville);
-    return villeDao.findVilles();
+    Ville ville = villeRepository.findById(idVille)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Ville non trouvée"));
+    villeRepository.delete(ville);
+    return villeRepository.findAll();
   }
-
 }

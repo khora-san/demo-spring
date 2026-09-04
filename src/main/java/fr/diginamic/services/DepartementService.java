@@ -1,130 +1,124 @@
 package fr.diginamic.services;
 
-import fr.diginamic.dao.DepartementDao;
 import fr.diginamic.entities.Departement;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.repository.DepartementRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service contenant la logique métier relative aux départements. Travaille exclusivement avec des
- * entités ; la conversion vers/depuis les DTO est de la responsabilité de la couche
- * contrôleur/mapper.
+ * Fournit la logique métier relative aux départements : consultation, création, modification,
+ * suppression, ainsi que la résolution du département associé à une ville.
  */
 @Service
 public class DepartementService {
 
-  private final DepartementDao departementDao;
+  private final DepartementRepository departementRepository;
 
-  public DepartementService(DepartementDao departementDao) {
-    this.departementDao = departementDao;
+  /**
+   * Construit le service à partir du repository des départements.
+   *
+   * @param departementRepository repository utilisé pour l'accès aux données des départements
+   */
+  public DepartementService(DepartementRepository departementRepository) {
+    this.departementRepository = departementRepository;
   }
 
   /**
-   * Récupère l'ensemble des départements.
+   * Extrait l'ensemble des départements existants.
    *
    * @return la liste de tous les départements
    */
   public List<Departement> extractDepartements() {
-    return departementDao.findDepartements();
+    return departementRepository.findAll();
   }
 
   /**
-   * Récupère un département à partir de son identifiant.
+   * Extrait le département correspondant à l'identifiant donné.
    *
    * @param id identifiant du département recherché
    * @return le département correspondant
-   * @throws ExceptionFonctionnelle si aucun département ne possède cet identifiant
+   * @throws ExceptionFonctionnelle si aucun département ne correspond à cet identifiant
    */
   public Departement extractDepartement(int id) throws ExceptionFonctionnelle {
-    Departement departement = departementDao.findById(id);
-    if (departement == null) {
-      throw new ExceptionFonctionnelle("Département non trouvé");
-    }
-    return departement;
+    return departementRepository.findById(id)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
   }
 
   /**
-   * Récupère un département à partir de son code.
+   * Extrait le département correspondant au code donné.
    *
    * @param code code du département recherché
    * @return le département correspondant
-   * @throws ExceptionFonctionnelle si aucun département ne possède ce code
+   * @throws ExceptionFonctionnelle si aucun département ne correspond à ce code
    */
   public Departement extractDepartementByCode(String code) throws ExceptionFonctionnelle {
-    Departement departement = departementDao.findByCode(code);
-    if (departement == null) {
-      throw new ExceptionFonctionnelle("Département non trouvé");
-    }
-    return departement;
+    return departementRepository.findByCode(code)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
   }
 
   /**
-   * Crée un nouveau département. Un nouvel objet est reconstruit à partir des seules données utiles
-   * (code, nom) afin de ne pas faire confiance à un éventuel identifiant fourni par le client.
+   * Insère un nouveau département.
    *
-   * @param departement département à créer
-   * @return le département créé, avec son identifiant généré
-   * @throws ExceptionFonctionnelle si un département possède déjà ce code
+   * @param departement département à insérer (seuls le code et le nom sont pris en compte)
+   * @return le département inséré, tel que persisté
+   * @throws ExceptionFonctionnelle si un département portant le même code existe déjà
    */
   @Transactional
   public Departement insertDepartement(Departement departement) throws ExceptionFonctionnelle {
-    if (departementDao.findByCode(departement.getCode()) != null) {
+    if (departementRepository.findByCode(departement.getCode()).isPresent()) {
       throw new ExceptionFonctionnelle("Le département existe déjà");
     }
-    Departement newDepartement = new Departement();
-    newDepartement.setCode(departement.getCode());
-    newDepartement.setNom(departement.getNom());
-    departementDao.persist(newDepartement);
-    return newDepartement;
+    Departement nouveauDepartement = new Departement();
+    nouveauDepartement.setCode(departement.getCode());
+    nouveauDepartement.setNom(departement.getNom());
+    return departementRepository.save(nouveauDepartement);
   }
 
   /**
-   * Modifie un département existant.
+   * Modifie le département correspondant à l'identifiant donné.
    *
    * @param idDepartement      identifiant du département à modifier
-   * @param departementModifie département contenant les nouvelles valeurs
+   * @param departementModifie département contenant les nouvelles valeurs (code et nom)
    * @return le département modifié
-   * @throws ExceptionFonctionnelle si aucun département ne possède cet identifiant
+   * @throws ExceptionFonctionnelle si aucun département ne correspond à cet identifiant
    */
   @Transactional
   public Departement modifierDepartement(int idDepartement, Departement departementModifie)
       throws ExceptionFonctionnelle {
-    if (departementDao.findById(idDepartement) == null) {
-      throw new ExceptionFonctionnelle("Département non trouvé");
-    }
-    return departementDao.merge(idDepartement, departementModifie);
+    Departement departementExistant = departementRepository.findById(idDepartement)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
+    departementExistant.setCode(departementModifie.getCode());
+    departementExistant.setNom(departementModifie.getNom());
+    return departementExistant;
   }
 
   /**
-   * Supprime un département.
+   * Supprime le département correspondant à l'identifiant donné.
    *
    * @param idDepartement identifiant du département à supprimer
-   * @throws ExceptionFonctionnelle si aucun département ne possède cet identifiant
+   * @throws ExceptionFonctionnelle si aucun département ne correspond à cet identifiant
    */
   @Transactional
   public void supprimerDepartement(int idDepartement) throws ExceptionFonctionnelle {
-    Departement departement = departementDao.findById(idDepartement);
-    if (departement == null) {
-      throw new ExceptionFonctionnelle("Département non trouvé");
-    }
-    departementDao.remove(departement);
+    Departement departement = departementRepository.findById(idDepartement)
+        .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
+    departementRepository.delete(departement);
   }
 
   /**
-   * Résout le département associé à une ville à partir d'un code et/ou d'un identifiant. Tente
-   * d'abord la résolution par identifiant, puis par code. Si le code est renseigné mais ne
-   * correspond à aucun département existant, un nouveau département est créé automatiquement avec
-   * ce seul code.
+   * Résout le département associé à une ville à partir d'un identifiant et/ou d'un code.
+   * L'identifiant est prioritaire s'il est fourni et valide. Si seul le code est fourni (ou si
+   * l'identifiant fourni est invalide) et qu'aucun département ne correspond à ce code, un nouveau
+   * département est créé avec ce seul code.
    *
-   * @param codeDepartement code du département (peut être nul si idDepartement est renseigné)
-   * @param idDepartement   identifiant du département (peut être nul si codeDepartement est
-   *                        renseigné)
-   * @return le département résolu, existant ou nouvellement créé
-   * @throws ExceptionFonctionnelle si aucun département ne peut être résolu ni créé (identifiant
-   *                                inconnu et aucun code fourni)
+   * @param codeDepartement code du département, utilisé en secours ou pour la création
+   * @param idDepartement   identifiant du département, prioritaire s'il est fourni
+   * @return le département résolu (existant ou nouvellement créé)
+   * @throws ExceptionFonctionnelle si ni l'identifiant ni le code ne sont fournis
    */
+  @Transactional
   public Departement resolveDepartement(String codeDepartement, Integer idDepartement)
       throws ExceptionFonctionnelle {
     if (idDepartement != null) {
@@ -134,12 +128,10 @@ public class DepartementService {
         // id fourni mais invalide : on retente via le code, s'il est disponible
       }
     }
-
     if (codeDepartement != null) {
       try {
         return extractDepartementByCode(codeDepartement);
       } catch (ExceptionFonctionnelle e) {
-        // code fourni mais aucun département existant : on le crée
         Departement nouveauDepartement = new Departement();
         nouveauDepartement.setCode(codeDepartement);
         return insertDepartement(nouveauDepartement);
