@@ -1,7 +1,9 @@
 package fr.diginamic.controlers;
 
+import fr.diginamic.dto.VilleDto;
 import fr.diginamic.entities.Ville;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.mapper.VilleMapper;
 import fr.diginamic.services.VilleService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -22,66 +24,114 @@ import java.util.List;
 public class VilleControleur implements VilleControleurDoc {
 
   private final VilleService villeService;
+  private final VilleMapper villeMapper;
 
-  public VilleControleur(VilleService villeService) {
+  public VilleControleur(VilleService villeService, VilleMapper villeMapper) {
     this.villeService = villeService;
+    this.villeMapper = villeMapper;
   }
 
   @Override
   @GetMapping
-  public ResponseEntity<List<Ville>> getVilles() {
-    return ResponseEntity.ok(villeService.extractVilles());
+  public ResponseEntity<List<VilleDto>> getVilles() {
+    List<VilleDto> villesDto = villeService.extractVilles().stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
   @GetMapping("/{id}")
-  public ResponseEntity<Ville> getVilleById(@PathVariable int id) throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.extractVille(id));
+  public ResponseEntity<VilleDto> getVilleById(@PathVariable int id) throws ExceptionFonctionnelle {
+    Ville ville = villeService.extractVille(id);
+    return ResponseEntity.ok(villeMapper.toDto(ville));
   }
 
   @Override
   @GetMapping(value = "/recherche", params = "prefixe")
-  public ResponseEntity<List<Ville>> getVillesByNameStartWith(@RequestParam String prefixe)
+  public ResponseEntity<List<VilleDto>> getVillesByNameStartWith(@RequestParam String prefixe)
       throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.extractVillesByNameStartWith(prefixe));
+    List<VilleDto> villesDto = villeService.extractVillesByNameStartWith(prefixe).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
-  @GetMapping(value = "/recherche", params = {"min", "!max"})
-  public ResponseEntity<List<Ville>> getVillesByPopGreaterTo(@RequestParam int min)
+  @GetMapping(value = "/recherche", params = {"min", "!max", "!code"})
+  public ResponseEntity<List<VilleDto>> getVillesByPopGreaterTo(@RequestParam int min)
       throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.extractVillesByPopulationSuperieure(min));
+    List<VilleDto> villesDto = villeService.extractVillesByPopulationSuperieure(min).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
-  @GetMapping(value = "/recherche", params = {"min", "max"})
-  public ResponseEntity<List<Ville>> getVillesByPopWithin(@RequestParam int min,
+  @GetMapping(value = "/recherche", params = {"min", "max", "!code"})
+  public ResponseEntity<List<VilleDto>> getVillesByPopWithin(@RequestParam int min,
       @RequestParam int max)
       throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.extractVillesByPopulationEntre(min, max));
+    List<VilleDto> villesDto = villeService.extractVillesByPopulationEntre(min, max).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
+  }
+
+  @Override
+  @GetMapping(value = "/recherche", params = {"code", "n"})
+  public ResponseEntity<List<VilleDto>> getTopVillesByDepartementCode(
+      @RequestParam String code, @RequestParam int n) throws ExceptionFonctionnelle {
+    List<VilleDto> villesDto = villeService.extractTopVillesByDepartementCode(code, n).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
+  }
+
+  @Override
+  @GetMapping(value = "/recherche", params = {"code", "min", "max"})
+  public ResponseEntity<List<VilleDto>> getVillesByPopulationEntreAndDepartementCode(
+      @RequestParam String code, @RequestParam int min, @RequestParam int max)
+      throws ExceptionFonctionnelle {
+    List<VilleDto> villesDto = villeService.extractVillesByPopulationEntreAndDepartementCode(code,
+            min, max).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
   @PostMapping
-  public ResponseEntity<List<Ville>> addVille(@Valid @RequestBody Ville ville)
-      throws ExceptionFonctionnelle
-  //todo : Ville (en paramètre) pourrait devenir un DTO dédié (VilleDto), pour découpler le contrat d'API du modèle de données
-  {
-    return ResponseEntity.ok(villeService.insertVille(ville));
+  public ResponseEntity<List<VilleDto>> addVille(@Valid @RequestBody VilleDto villeDto)
+      throws ExceptionFonctionnelle {
+    Ville ville = villeMapper.toEntity(villeDto);
+    List<VilleDto> villesDto = villeService.insertVille(ville, villeDto.codeDepartement(),
+            villeDto.idDepartement()).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
   @PutMapping("/{id}")
-  public ResponseEntity<List<Ville>> putVilleById(@PathVariable int id,
-      @Valid @RequestBody Ville ville)
+  public ResponseEntity<List<VilleDto>> putVilleById(@PathVariable int id,
+      @Valid @RequestBody VilleDto villeDto)
       throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.modifierVille(id, ville));
+    Ville ville = villeMapper.toEntity(villeDto);
+    List<VilleDto> villesDto = villeService.modifierVille(id, ville, villeDto.codeDepartement(),
+            villeDto.idDepartement()).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 
   @Override
   @DeleteMapping("/{id}")
-  public ResponseEntity<List<Ville>> deleteVilleById(@PathVariable int id)
+  public ResponseEntity<List<VilleDto>> deleteVilleById(@PathVariable int id)
       throws ExceptionFonctionnelle {
-    return ResponseEntity.ok(villeService.supprimerVille(id));
+    List<VilleDto> villesDto = villeService.supprimerVille(id).stream()
+        .map(villeMapper::toDto)
+        .toList();
+    return ResponseEntity.ok(villesDto);
   }
 }

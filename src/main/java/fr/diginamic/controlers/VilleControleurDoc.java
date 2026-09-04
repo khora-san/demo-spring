@@ -1,6 +1,6 @@
 package fr.diginamic.controlers;
 
-import fr.diginamic.entities.Ville;
+import fr.diginamic.dto.VilleDto;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,9 +29,9 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "200",
           description = "Liste des villes au format JSON",
           content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
-          @Schema(implementation = Ville.class)))})
+          @Schema(implementation = VilleDto.class)))})
   })
-  ResponseEntity<List<Ville>> getVilles();
+  ResponseEntity<List<VilleDto>> getVilles();
 
   /**
    * Retourne la ville correspondant à l'identifiant donné.
@@ -48,65 +48,8 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "400",
           description = "Ville non trouvée", content = @Content())
   })
-  ResponseEntity<Ville> getVilleById(
+  ResponseEntity<VilleDto> getVilleById(
       @Parameter(description = "Identifiant de la ville à afficher", example = "3", required = true) int id)
-      throws ExceptionFonctionnelle;
-
-  /**
-   * Ajoute une nouvelle ville en base.
-   *
-   * @param ville les données de la ville à créer
-   * @return la liste des villes après insertion
-   * @throws ExceptionFonctionnelle si les données sont invalides ou si une ville du même nom existe
-   *                                déjà
-   */
-  @Operation(summary = "Ajoute une nouvelle ville")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200",
-          description = "Ville insérée avec succès",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "400",
-          description = "Données invalides ou ville déjà existante", content = @Content())
-  })
-  ResponseEntity<List<Ville>> addVille(Ville ville) throws ExceptionFonctionnelle;
-
-  /**
-   * Modifie les données d'une ville existante.
-   *
-   * @param id    l'identifiant de la ville à modifier
-   * @param ville les nouvelles données à appliquer
-   * @return la liste des villes après modification
-   * @throws ExceptionFonctionnelle si la ville n'existe pas ou si les données sont invalides
-   */
-  @Operation(summary = "Modifie une ville existante à partir de son identifiant")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200",
-          description = "Ville modifiée avec succès",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "400",
-          description = "Ville non trouvée ou données invalides", content = @Content())
-  })
-  ResponseEntity<List<Ville>> putVilleById(
-      @Parameter(description = "Identifiant de la ville à modifier", example = "3", required = true) int id,
-      Ville ville) throws ExceptionFonctionnelle;
-
-  /**
-   * Supprime une ville existante.
-   *
-   * @param id l'identifiant de la ville à supprimer
-   * @return la liste des villes après suppression
-   * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
-   */
-  @Operation(summary = "Supprime une ville existante à partir de son identifiant")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200",
-          description = "Ville supprimée avec succès",
-          content = {@Content(mediaType = "application/json")}),
-      @ApiResponse(responseCode = "400",
-          description = "Ville non trouvée", content = @Content())
-  })
-  ResponseEntity<List<Ville>> deleteVilleById(
-      @Parameter(description = "Identifiant de la ville à supprimer", example = "3", required = true) int id)
       throws ExceptionFonctionnelle;
 
   /**
@@ -121,11 +64,11 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "200",
           description = "Liste des villes correspondantes au format JSON",
           content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
-          @Schema(implementation = Ville.class)))}),
+          @Schema(implementation = VilleDto.class)))}),
       @ApiResponse(responseCode = "400",
           description = "Aucune ville ne correspond au préfixe", content = @Content())
   })
-  ResponseEntity<List<Ville>> getVillesByNameStartWith(
+  ResponseEntity<List<VilleDto>> getVillesByNameStartWith(
       @Parameter(description = "Préfixe recherché dans le nom des villes", example = "Li", required = true) String prefixe)
       throws ExceptionFonctionnelle;
 
@@ -141,11 +84,11 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "200",
           description = "Liste des villes correspondantes au format JSON",
           content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
-          @Schema(implementation = Ville.class)))}),
+          @Schema(implementation = VilleDto.class)))}),
       @ApiResponse(responseCode = "400",
           description = "Aucune ville ne dépasse ce seuil de population", content = @Content())
   })
-  ResponseEntity<List<Ville>> getVillesByPopGreaterTo(
+  ResponseEntity<List<VilleDto>> getVillesByPopGreaterTo(
       @Parameter(description = "Population minimum (exclue)", example = "100000", required = true) int min)
       throws ExceptionFonctionnelle;
 
@@ -162,12 +105,119 @@ public interface VilleControleurDoc {
       @ApiResponse(responseCode = "200",
           description = "Liste des villes correspondantes au format JSON",
           content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
-          @Schema(implementation = Ville.class)))}),
+          @Schema(implementation = VilleDto.class)))}),
       @ApiResponse(responseCode = "400",
           description = "Aucune ville ne correspond à cet intervalle de population", content = @Content())
   })
-  ResponseEntity<List<Ville>> getVillesByPopWithin(
+  ResponseEntity<List<VilleDto>> getVillesByPopWithin(
       @Parameter(description = "Population minimum", example = "50000", required = true) int min,
       @Parameter(description = "Population maximum", example = "200000", required = true) int max)
       throws ExceptionFonctionnelle;
+
+  /**
+   * Retourne les n villes les plus peuplées d'un département donné.
+   *
+   * @param code le code du département concerné
+   * @param n    le nombre de villes à retourner
+   * @return la liste des n villes les plus peuplées du département
+   * @throws ExceptionFonctionnelle si le code de département est invalide, ou si aucune ville n'est
+   *                                trouvée pour ce département
+   */
+  @Operation(summary = "Retourne les n villes les plus peuplées d'un département")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Liste des villes au format JSON",
+          content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
+          @Schema(implementation = VilleDto.class)))}),
+      @ApiResponse(responseCode = "400",
+          description = "Département non trouvé ou aucune ville trouvée", content = @Content())
+  })
+  ResponseEntity<List<VilleDto>> getTopVillesByDepartementCode(
+      @Parameter(description = "Code du département concerné", example = "34", required = true) String code,
+      @Parameter(description = "Nombre de villes à retourner", example = "5", required = true) int n)
+      throws ExceptionFonctionnelle;
+
+  /**
+   * Retourne les villes d'un département donné dont la population est comprise entre deux bornes.
+   *
+   * @param code le code du département concerné
+   * @param min  la population minimale
+   * @param max  la population maximale
+   * @return la liste des villes du département correspondant aux critères
+   * @throws ExceptionFonctionnelle si le code de département est invalide, ou si aucune ville n'est
+   *                                trouvée pour ces critères
+   */
+  @Operation(summary = "Retourne les villes d'un département dont la population est comprise entre deux bornes")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Liste des villes au format JSON",
+          content = {@Content(mediaType = "application/json", array = @ArraySchema(schema =
+          @Schema(implementation = VilleDto.class)))}),
+      @ApiResponse(responseCode = "400",
+          description = "Département non trouvé ou aucune ville trouvée", content = @Content())
+  })
+  ResponseEntity<List<VilleDto>> getVillesByPopulationEntreAndDepartementCode(
+      @Parameter(description = "Code du département concerné", example = "34", required = true) String code,
+      @Parameter(description = "Population minimale", example = "1000", required = true) int min,
+      @Parameter(description = "Population maximale", example = "50000", required = true) int max)
+      throws ExceptionFonctionnelle;
+
+  /**
+   * Ajoute une nouvelle ville en base.
+   *
+   * @param villeDto les données de la ville à créer
+   * @return la liste des villes après insertion
+   * @throws ExceptionFonctionnelle si les données sont invalides ou si une ville du même nom existe
+   *                                déjà
+   */
+  @Operation(summary = "Ajoute une nouvelle ville")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Ville insérée avec succès",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "400",
+          description = "Données invalides ou ville déjà existante", content = @Content())
+  })
+  ResponseEntity<List<VilleDto>> addVille(VilleDto villeDto) throws ExceptionFonctionnelle;
+
+  /**
+   * Modifie les données d'une ville existante.
+   *
+   * @param id       l'identifiant de la ville à modifier
+   * @param villeDto les nouvelles données à appliquer
+   * @return la liste des villes après modification
+   * @throws ExceptionFonctionnelle si la ville n'existe pas ou si les données sont invalides
+   */
+  @Operation(summary = "Modifie une ville existante à partir de son identifiant")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Ville modifiée avec succès",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "400",
+          description = "Ville non trouvée ou données invalides", content = @Content())
+  })
+  ResponseEntity<List<VilleDto>> putVilleById(
+      @Parameter(description = "Identifiant de la ville à modifier", example = "3", required = true) int id,
+      VilleDto villeDto) throws ExceptionFonctionnelle;
+
+  /**
+   * Supprime une ville existante.
+   *
+   * @param id l'identifiant de la ville à supprimer
+   * @return la liste des villes après suppression
+   * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
+   */
+  @Operation(summary = "Supprime une ville existante à partir de son identifiant")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200",
+          description = "Ville supprimée avec succès",
+          content = {@Content(mediaType = "application/json")}),
+      @ApiResponse(responseCode = "400",
+          description = "Ville non trouvée", content = @Content())
+  })
+  ResponseEntity<List<VilleDto>> deleteVilleById(
+      @Parameter(description = "Identifiant de la ville à supprimer", example = "3", required = true) int id)
+      throws ExceptionFonctionnelle;
+
+
 }

@@ -25,7 +25,8 @@ public class VilleDao {
    * @return la liste de toutes les villes
    */
   public List<Ville> findVilles() {
-    TypedQuery<Ville> query = em.createQuery("SELECT v FROM Ville v", Ville.class);
+    TypedQuery<Ville> query = em.createQuery(
+        "SELECT v FROM Ville v JOIN FETCH v.departement", Ville.class);
     return query.getResultList();
   }
 
@@ -46,8 +47,8 @@ public class VilleDao {
    * @return la liste des villes correspondantes (éventuellement vide)
    */
   public List<Ville> findVillesByNomPrefixe(String prefixe) {
-    TypedQuery<Ville> query = em.createQuery("SELECT v FROM Ville v WHERE LOWER(v.nom) LIKE LOWER(:prefixe)",
-            Ville.class)
+    TypedQuery<Ville> query = em.createQuery(
+            "SELECT v FROM Ville v JOIN FETCH v.departement WHERE v.nom LIKE :prefixe", Ville.class)
         .setParameter("prefixe", prefixe + "%");
     return query.getResultList();
   }
@@ -59,8 +60,8 @@ public class VilleDao {
    * @return la liste des villes correspondantes (éventuellement vide)
    */
   public List<Ville> findVillesByPopulationSuperieure(int min) {
-    TypedQuery<Ville> query = em.createQuery("SELECT v FROM Ville v WHERE v.population > :min",
-            Ville.class)
+    TypedQuery<Ville> query = em.createQuery(
+            "SELECT v FROM Ville v JOIN FETCH v.departement WHERE v.population > :min", Ville.class)
         .setParameter("min", min);
     return query.getResultList();
   }
@@ -74,7 +75,44 @@ public class VilleDao {
    */
   public List<Ville> findVillesByPopulationEntre(int min, int max) {
     TypedQuery<Ville> query = em.createQuery(
-            "SELECT v FROM Ville v WHERE v.population BETWEEN :min AND :max", Ville.class)
+            "SELECT v FROM Ville v JOIN FETCH v.departement WHERE v.population BETWEEN :min AND :max",
+            Ville.class)
+        .setParameter("min", min)
+        .setParameter("max", max);
+    return query.getResultList();
+  }
+
+  /**
+   * Récupère les n villes les plus peuplées d'un département donné.
+   *
+   * @param code code du département concerné
+   * @param n    nombre de villes à retourner
+   * @return la liste des n villes les plus peuplées du département, triées par population
+   * décroissante
+   */
+  public List<Ville> findTopVillesByDepartementCode(String code, int n) {
+    TypedQuery<Ville> query = em.createQuery(
+            "SELECT v FROM Ville v JOIN FETCH v.departement d WHERE d.code = :code "
+                + "ORDER BY v.population DESC",
+            Ville.class)
+        .setParameter("code", code);
+    return query.setMaxResults(n).getResultList();
+  }
+
+  /**
+   * Récupère les villes d'un département donné dont la population est comprise entre deux bornes.
+   *
+   * @param code code du département concerné
+   * @param min  population minimale (incluse)
+   * @param max  population maximale (incluse)
+   * @return la liste des villes du département dont la population est comprise entre min et max
+   */
+  public List<Ville> findVillesByPopulationEntreAndDepartementCode(String code, int min, int max) {
+    TypedQuery<Ville> query = em.createQuery(
+            "SELECT v FROM Ville v JOIN FETCH v.departement d WHERE d.code = :code "
+                + "AND v.population BETWEEN :min AND :max",
+            Ville.class)
+        .setParameter("code", code)
         .setParameter("min", min)
         .setParameter("max", max);
     return query.getResultList();
@@ -109,12 +147,13 @@ public class VilleDao {
    * est ignoré.
    *
    * @param idVille       l'identifiant de la ville à modifier
-   * @param villeModifiee les nouvelles données à appliquer (nom, population)
+   * @param villeModifiee les nouvelles données à appliquer (nom, population, département)
    */
   public void merge(int idVille, Ville villeModifiee) {
     Ville villeExistante = em.find(Ville.class, idVille);
     villeExistante.setNom(villeModifiee.getNom());
     villeExistante.setPopulation(villeModifiee.getPopulation());
+    villeExistante.setDepartement(villeModifiee.getDepartement());
   }
 
   /**

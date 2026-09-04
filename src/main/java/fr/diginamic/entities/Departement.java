@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 @Entity
@@ -14,6 +15,8 @@ public class Departement {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
+
+  @NotBlank(message = "Le code du département ne doit pas être vide")
   private String code;
   private String nom;
 
