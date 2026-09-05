@@ -75,6 +75,23 @@ public class VilleService {
   }
 
   /**
+   * Extrait l'ensemble des villes d'un département, triées par population décroissante.
+   *
+   * @param code code du département
+   * @return la liste des villes de ce département
+   * @throws ExceptionFonctionnelle si le département n'existe pas ou si aucune ville ne correspond
+   */
+  public List<Ville> extractVillesByDepartementCode(String code) throws ExceptionFonctionnelle {
+    departementService.extractDepartementByCode(code);
+    List<Ville> villes = villeRepository.findByDepartementCodeOrderByPopulationDesc(code,
+        Pageable.unpaged());
+    if (villes.isEmpty()) {
+      throw new ExceptionFonctionnelle("Aucune ville trouvée pour ce département");
+    }
+    return villes;
+  }
+
+  /**
    * Extrait les villes dont la population est strictement supérieure au minimum donné, triées par
    * population décroissante.
    *

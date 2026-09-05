@@ -1,11 +1,16 @@
 package fr.diginamic.controlers;
 
+import com.itextpdf.text.DocumentException;
 import fr.diginamic.dto.VilleDto;
 import fr.diginamic.entities.Ville;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.mapper.VilleMapper;
 import fr.diginamic.services.VilleService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -148,5 +153,27 @@ public class VilleControleur implements VilleControleurDoc {
         .map(villeMapper::toDto)
         .toList();
     return ResponseEntity.ok(villesDto);
+  }
+
+  @GetMapping("/export")
+  public void exportVillesCsv(@RequestParam int min, HttpServletResponse response)
+      throws IOException, ExceptionFonctionnelle {
+    List<Ville> villes = villeService.extractVillesByPopulationSuperieure(min);
+
+    response.setContentType("text/csv; charset=UTF-8");
+    response.setCharacterEncoding("UTF-8");
+    response.setHeader("Content-Disposition", "attachment; filename=\"villes.csv\"");
+
+    PrintWriter writer = response.getWriter();
+    writer.println("nom;population;codeDepartement;nomDepartement");
+    for (Ville ville : villes) {
+      String nomDepartement = Objects.requireNonNullElse(ville.getDepartement().getNom(), "");
+      writer.printf("%s;%d;%s;%s%n",
+          ville.getNom(),
+          ville.getPopulation(),
+          ville.getDepartement().getCode(),
+          nomDepartement);
+    }
+    writer.flush();
   }
 }

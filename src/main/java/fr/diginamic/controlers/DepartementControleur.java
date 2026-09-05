@@ -5,7 +5,10 @@ import fr.diginamic.entities.Departement;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.mapper.DepartementMapper;
 import fr.diginamic.services.DepartementService;
+import fr.diginamic.utils.DepartementPdfExporter;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.itextpdf.text.DocumentException;
+import fr.diginamic.entities.Ville;
+import fr.diginamic.services.VilleService;
 
 /**
  * Contrôleur REST exposant les opérations CRUD sur les départements. Traduit les échanges HTTP
@@ -28,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DepartementControleur implements DepartementControleurDoc {
 
   private final DepartementService departementService;
+  private final VilleService villeService;
   private final DepartementMapper departementMapper;
 
   /**
@@ -37,11 +44,13 @@ public class DepartementControleur implements DepartementControleurDoc {
    * @param departementService service portant la logique métier sur les départements
    * @param departementMapper  mapper assurant la conversion entité/DTO
    */
-  public DepartementControleur(DepartementService departementService,
+  public DepartementControleur(DepartementService departementService, VilleService villeService,
       DepartementMapper departementMapper) {
     this.departementService = departementService;
+    this.villeService = villeService;
     this.departementMapper = departementMapper;
   }
+
 
   @Override
   @GetMapping
@@ -94,5 +103,20 @@ public class DepartementControleur implements DepartementControleurDoc {
       throws ExceptionFonctionnelle {
     departementService.supprimerDepartement(id);
     return ResponseEntity.ok().build();
+  }
+
+  //
+  //
+  @GetMapping("/{code}/export")
+  public void exportDepartementPdf(@PathVariable String code, HttpServletResponse response)
+      throws IOException, DocumentException, ExceptionFonctionnelle {
+    Departement departement = departementService.extractDepartementByCode(code);
+    List<Ville> villes = villeService.extractVillesByDepartementCode(code);
+
+    response.setContentType("application/pdf");
+    response.setHeader("Content-Disposition",
+        "attachment; filename=\"departement-" + departement.getCode() + ".pdf\"");
+
+    DepartementPdfExporter.export(departement, villes, response.getOutputStream());
   }
 }
