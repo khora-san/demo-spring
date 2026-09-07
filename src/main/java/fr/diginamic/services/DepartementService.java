@@ -1,11 +1,18 @@
 package fr.diginamic.services;
 
+import fr.diginamic.dto.DepartementApiDto;
 import fr.diginamic.entities.Departement;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.repository.DepartementRepository;
+import fr.diginamic.utils.PropertiesFileUtils;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Fournit la logique métier relative aux départements : consultation, création, modification,
@@ -24,6 +31,8 @@ public class DepartementService {
   public DepartementService(DepartementRepository departementRepository) {
     this.departementRepository = departementRepository;
   }
+
+  private static final Logger log = LoggerFactory.getLogger(DepartementService.class);
 
   /**
    * Extrait l'ensemble des départements existants.
@@ -138,5 +147,35 @@ public class DepartementService {
       }
     }
     throw new ExceptionFonctionnelle("Département inconnu");
+  }
+
+  @Value("${application.init}")
+  private boolean applicationInit;
+
+  private final RestTemplate restTemplate = new RestTemplate();
+
+  @PostConstruct
+  public void initData() {
+    if (!applicationInit) {
+      log.info("Initialisation des départements ignorée (application.init=false)");
+      return;
+    }
+
+    // appel API et désérialisation
+    DepartementApiDto[] dtos = restTemplate.getForObject("https://geo.api.gouv.fr/departements",
+        DepartementApiDto[].class);
+
+    // pour chaque département reçu, retrouver l'entité correspondante
+    // en base par son code, et mettre à jour son nom
+    for (DepartementApiDto dto : dtos) {
+      departementRepository.findByCode(dto.code()).ifPresent(departement -> {
+        departement.setNom(dto.nom());
+        departementRepository.save(departement);
+      });
+    }
+    // repasser application.init à false dans le fichier application.properties
+    PropertiesFileUtils.updateProperty("src/main/resources/application.properties",
+        "application.init", "false");
+
   }
 }
