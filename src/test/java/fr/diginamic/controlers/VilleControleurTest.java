@@ -30,7 +30,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(roles="ADMIN")
 class VilleControleurTest {
 
   @Autowired
