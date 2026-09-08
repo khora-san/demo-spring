@@ -23,7 +23,7 @@ public class SecurityConfig {
     // Règles d'autorisation HTTP
     http.authorizeHttpRequests(auth -> auth
 
-        .requestMatchers(HttpMethod.GET).hasRole("USER")
+        .requestMatchers(HttpMethod.GET).hasAnyRole("USER","ADMIN")
         .anyRequest().hasRole("ADMIN")
     );
     return http.build();
