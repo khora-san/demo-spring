@@ -210,10 +210,10 @@ public class VilleService {
   @Transactional
   public List<Ville> insertVille(Ville ville, String codeDepartement, Integer idDepartement)
       throws ExceptionFonctionnelle {
-    if (villeRepository.existsByNom(ville.getNom())) {
-      throw new ExceptionFonctionnelle("La ville existe déjà");
-    }
     Departement departement = departementService.resolveDepartement(codeDepartement, idDepartement);
+    if (villeRepository.existsByNomAndDepartementCode(ville.getNom(), departement.getCode())) {
+      throw new ExceptionFonctionnelle("La ville existe déjà pour ce département");
+    }
     Ville nouvelleVille = new Ville();
     nouvelleVille.setNom(ville.getNom());
     nouvelleVille.setPopulation(ville.getPopulation());

@@ -85,9 +85,12 @@ public interface VilleRepository extends JpaRepository<Ville, Integer> {
   List<Ville> findByDepartementCodeOrderByPopulationDesc(String code, Pageable pageable);
 
   /**
+   * Vérifie si une ville portant le nom donné existe déjà dans le département dont le code est
+   * fourni.
    *
-   * @param nom
-   * @return
+   * @param nom  nom de la ville recherchée
+   * @param code code du département concerné
+   * @return {@code true} si une telle ville existe déjà, {@code false} sinon
    */
-  boolean existsByNom(String nom);
+  boolean existsByNomAndDepartementCode(String nom, String code);
 }
