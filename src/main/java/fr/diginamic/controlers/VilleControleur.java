@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +40,7 @@ public class VilleControleur implements VilleControleurDoc {
     this.villeMapper = villeMapper;
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping
   public ResponseEntity<Page<VilleDto>> getVilles(
@@ -49,6 +51,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping("/{id}")
   public ResponseEntity<VilleDto> getVilleById(@PathVariable int id) throws ExceptionFonctionnelle {
@@ -56,6 +59,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villeMapper.toDto(ville));
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = "prefixe")
   public ResponseEntity<List<VilleDto>> getVillesByNameStartWith(@RequestParam String prefixe)
@@ -66,6 +70,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = {"min", "!max", "!code"})
   public ResponseEntity<List<VilleDto>> getVillesByPopGreaterTo(@RequestParam int min)
@@ -76,6 +81,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = {"min", "max", "!code"})
   public ResponseEntity<List<VilleDto>> getVillesByPopWithin(@RequestParam int min,
@@ -87,6 +93,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = {"code", "n"})
   public ResponseEntity<List<VilleDto>> getTopVillesByDepartementCode(
@@ -97,6 +104,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = {"code", "min", "!max", "!n"})
   public ResponseEntity<List<VilleDto>> getVillesByPopulationSuperieureAndDepartementCode(
@@ -108,6 +116,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(value = "/recherche", params = {"code", "min", "max"})
   public ResponseEntity<List<VilleDto>> getVillesByPopulationEntreAndDepartementCode(
@@ -120,6 +129,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @PostMapping
   public ResponseEntity<List<VilleDto>> addVille(@Valid @RequestBody VilleDto villeDto)
@@ -132,6 +142,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @PutMapping("/{id}")
   public ResponseEntity<List<VilleDto>> putVilleById(@PathVariable int id,
@@ -145,6 +156,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @DeleteMapping("/{id}")
   public ResponseEntity<List<VilleDto>> deleteVilleById(@PathVariable int id)
@@ -155,6 +167,7 @@ public class VilleControleur implements VilleControleurDoc {
     return ResponseEntity.ok(villesDto);
   }
 
+  @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping("/export")
   public void exportVillesCsv(@RequestParam int min, HttpServletResponse response)
       throws IOException, ExceptionFonctionnelle {

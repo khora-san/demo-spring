@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,7 +52,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     this.departementMapper = departementMapper;
   }
 
-
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping
   public ResponseEntity<List<DepartementDto>> getDepartements() {
@@ -61,6 +62,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok(departementDtos);
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping("/{id}")
   public ResponseEntity<DepartementDto> getDepartementById(@PathVariable int id)
@@ -69,6 +71,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok(departementMapper.toDto(departement));
   }
 
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @Override
   @GetMapping(params = "code")
   public ResponseEntity<DepartementDto> getDepartementByCode(@RequestParam String code)
@@ -77,6 +80,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok(departementMapper.toDto(departement));
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @PostMapping
   public ResponseEntity<DepartementDto> createDepartement(
@@ -87,6 +91,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok(departementMapper.toDto(departementCree));
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @PutMapping("/{id}")
   public ResponseEntity<DepartementDto> updateDepartementById(@PathVariable int id,
@@ -97,6 +102,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok(departementMapper.toDto(departementModifie));
   }
 
+  @Secured("ROLE_ADMIN")
   @Override
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteDepartementById(@PathVariable int id)
@@ -105,8 +111,7 @@ public class DepartementControleur implements DepartementControleurDoc {
     return ResponseEntity.ok().build();
   }
 
-  //
-  //
+  @Secured({"ROLE_USER", "ROLE_ADMIN"})
   @GetMapping("/{code}/export")
   public void exportDepartementPdf(@PathVariable String code, HttpServletResponse response)
       throws IOException, DocumentException, ExceptionFonctionnelle {
