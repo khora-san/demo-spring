@@ -4,10 +4,14 @@ import fr.diginamic.entities.Departement;
 import fr.diginamic.entities.Ville;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.repository.VilleRepository;
+import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,8 @@ public class VilleService {
 
   private final VilleRepository villeRepository;
   private final DepartementService departementService;
+
+  private static final Logger log = LoggerFactory.getLogger(VilleService.class);
 
   /**
    * Construit le service en lui injectant ses dépendances.
@@ -214,10 +220,14 @@ public class VilleService {
     if (villeRepository.existsByNomAndDepartementCode(ville.getNom(), departement.getCode())) {
       throw new ExceptionFonctionnelle("La ville existe déjà pour ce département");
     }
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     Ville nouvelleVille = new Ville();
     nouvelleVille.setNom(ville.getNom());
     nouvelleVille.setPopulation(ville.getPopulation());
     nouvelleVille.setDepartement(departement);
+    nouvelleVille.setUserMaj(username);
+    nouvelleVille.setDateMaj(LocalDateTime.now());
+    log.info("Ville '{}' insérée par {} le {}", nouvelleVille.getNom(), username, nouvelleVille.getDateMaj());
     villeRepository.save(nouvelleVille);
     return villeRepository.findAll();
   }
@@ -243,11 +253,16 @@ public class VilleService {
     Ville villeExistante = villeRepository.findById(idVille)
         .orElseThrow(() -> new ExceptionFonctionnelle("Ville non trouvée"));
     Departement departement = departementService.resolveDepartement(codeDepartement, idDepartement);
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     // Entité gérée par le contexte de persistance : la mise à jour des champs suffit, la
     // synchronisation en base se fait par dirty-checking à la fin de la transaction.
     villeExistante.setNom(villeModifiee.getNom());
     villeExistante.setPopulation(villeModifiee.getPopulation());
     villeExistante.setDepartement(departement);
+    villeExistante.setUserMaj(username);
+    villeExistante.setDateMaj(LocalDateTime.now());
+    log.info("Ville '{}' modifiée par {} le {}", villeExistante.getNom(), username, villeExistante.getDateMaj());
+
     return villeRepository.findAll();
   }
 
@@ -260,9 +275,12 @@ public class VilleService {
    */
   @Transactional
   public List<Ville> supprimerVille(int idVille) throws ExceptionFonctionnelle {
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     Ville ville = villeRepository.findById(idVille)
         .orElseThrow(() -> new ExceptionFonctionnelle("Ville non trouvée"));
     villeRepository.delete(ville);
+    log.info("Ville '{}' supprimée par {} le {}", ville.getNom(), username, LocalDateTime.now());
+
     return villeRepository.findAll();
   }
 }

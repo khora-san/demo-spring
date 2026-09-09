@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,6 +127,7 @@ class VilleServiceTest {
   }
 
   @Test
+  @WithMockUser
   void insertVille_devraitAjouterUneNouvelleVilleDansLeDepartement() throws ExceptionFonctionnelle {
     Ville nouvelleVille = new Ville();
     nouvelleVille.setNom("Nimes");
@@ -138,6 +140,7 @@ class VilleServiceTest {
   }
 
   @Test
+  @WithMockUser
   void insertVille_devraitEchouerSiLeNomExisteDejaDansLeMemeDepartement() {
     Ville villeDupliquee = new Ville();
     villeDupliquee.setNom("Paris");
@@ -148,6 +151,7 @@ class VilleServiceTest {
   }
 
   @Test
+  @WithMockUser
   void insertVille_devraitReussirSiLeNomExisteDejaMaisDansUnAutreDepartement()
       throws ExceptionFonctionnelle {
     Ville villeMemeNomAutreDepartement = new Ville();
@@ -161,6 +165,7 @@ class VilleServiceTest {
   }
 
   @Test
+  @WithMockUser
   void modifierVille_devraitMettreAJourLaPopulationDeSete() throws ExceptionFonctionnelle {
     Ville villeModifiee = new Ville();
     villeModifiee.setNom("Sete");

@@ -11,11 +11,16 @@ import fr.diginamic.entities.Departement;
 import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.repository.DepartementRepository;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 class DepartementServiceMockitoPurTest {
@@ -25,6 +30,17 @@ class DepartementServiceMockitoPurTest {
 
   @InjectMocks
   private DepartementService departementService;
+
+  @BeforeEach
+  void setUpSecurityContext() {
+    Authentication authentication = new UsernamePasswordAuthenticationToken("testuser", null);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
+  @AfterEach
+  void clearSecurityContext() {
+    SecurityContextHolder.clearContext();
+  }
 
   @Test
   void extractDepartementByCode_devraitRetournerLeDepartement() throws ExceptionFonctionnelle {

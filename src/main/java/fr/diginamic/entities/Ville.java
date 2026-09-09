@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Entity
 public class Ville {
@@ -31,6 +32,8 @@ public class Ville {
   @NotNull(message = "Le département de la ville doit être renseigné")
   private Departement departement;
 
+  private String userMaj;
+  private LocalDateTime dateMaj;
 
   public Ville() {
   }
@@ -67,5 +70,21 @@ public class Ville {
 
   public void setDepartement(Departement departement) {
     this.departement = departement;
+  }
+
+  public String getUserMaj() {
+    return userMaj;
+  }
+
+  public void setUserMaj(String userMaj) {
+    this.userMaj = userMaj;
+  }
+
+  public LocalDateTime getDateMaj() {
+    return dateMaj;
+  }
+
+  public void setDateMaj(LocalDateTime dateMaj) {
+    this.dateMaj = dateMaj;
   }
 }

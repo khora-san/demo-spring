@@ -6,10 +6,12 @@ import fr.diginamic.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.repository.DepartementRepository;
 import fr.diginamic.utils.PropertiesFileUtils;
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -33,6 +35,11 @@ public class DepartementService {
   }
 
   private static final Logger log = LoggerFactory.getLogger(DepartementService.class);
+
+  @Value("${application.init}")
+  private boolean applicationInit;
+
+  private final RestTemplate restTemplate = new RestTemplate();
 
   /**
    * Extrait l'ensemble des départements existants.
@@ -79,9 +86,13 @@ public class DepartementService {
     if (departementRepository.findByCode(departement.getCode()).isPresent()) {
       throw new ExceptionFonctionnelle("Le département existe déjà");
     }
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     Departement nouveauDepartement = new Departement();
     nouveauDepartement.setCode(departement.getCode());
     nouveauDepartement.setNom(departement.getNom());
+    nouveauDepartement.setUserMaj(username);
+    nouveauDepartement.setDateMaj(LocalDateTime.now());
+    log.info("Département '{}' inséré par {} le {}", nouveauDepartement.getNom(), username, nouveauDepartement.getDateMaj());
     return departementRepository.save(nouveauDepartement);
   }
 
@@ -98,8 +109,12 @@ public class DepartementService {
       throws ExceptionFonctionnelle {
     Departement departementExistant = departementRepository.findById(idDepartement)
         .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     departementExistant.setCode(departementModifie.getCode());
     departementExistant.setNom(departementModifie.getNom());
+    departementExistant.setUserMaj(username);
+    departementExistant.setDateMaj(LocalDateTime.now());
+    log.info("Département '{}' modifié par {} le {}", departementExistant.getNom(), username, departementExistant.getDateMaj());
     return departementExistant;
   }
 
@@ -111,8 +126,10 @@ public class DepartementService {
    */
   @Transactional
   public void supprimerDepartement(int idDepartement) throws ExceptionFonctionnelle {
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
     Departement departement = departementRepository.findById(idDepartement)
         .orElseThrow(() -> new ExceptionFonctionnelle("Département non trouvé"));
+    log.info("Département '{}' supprimé par {} le {}", departement.getNom(), username, LocalDateTime.now());
     departementRepository.delete(departement);
   }
 
@@ -148,11 +165,6 @@ public class DepartementService {
     }
     throw new ExceptionFonctionnelle("Département inconnu");
   }
-
-  @Value("${application.init}")
-  private boolean applicationInit;
-
-  private final RestTemplate restTemplate = new RestTemplate();
 
   @PostConstruct
   public void initData() {

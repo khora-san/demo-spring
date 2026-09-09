@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -23,6 +24,9 @@ public class Departement {
   @JsonIgnore
   @OneToMany(mappedBy = "departement")
   private List<Ville> villes;
+
+  private String userMaj;
+  private LocalDateTime dateMaj;
 
   public Departement() {
   }
@@ -57,5 +61,21 @@ public class Departement {
 
   public void setVilles(List<Ville> villes) {
     this.villes = villes;
+  }
+
+  public String getUserMaj() {
+    return userMaj;
+  }
+
+  public void setUserMaj(String userMaj) {
+    this.userMaj = userMaj;
+  }
+
+  public LocalDateTime getDateMaj() {
+    return dateMaj;
+  }
+
+  public void setDateMaj(LocalDateTime dateMaj) {
+    this.dateMaj = dateMaj;
   }
 }
