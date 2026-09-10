@@ -1,4 +1,4 @@
-package fr.diginamic.services;
+package fr.diginamic.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -7,8 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import fr.diginamic.entities.Departement;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import fr.diginamic.repository.DepartementRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;

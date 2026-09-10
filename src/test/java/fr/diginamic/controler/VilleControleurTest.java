@@ -1,4 +1,4 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.diginamic.dto.VilleDto;
-import fr.diginamic.entities.Departement;
-import fr.diginamic.entities.Ville;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.entity.Ville;
 import fr.diginamic.repository.DepartementRepository;
 import fr.diginamic.repository.VilleRepository;
 import java.util.List;

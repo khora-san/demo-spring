@@ -1,7 +1,7 @@
 package fr.diginamic.mapper;
 
 import fr.diginamic.dto.DepartementDto;
-import fr.diginamic.entities.Departement;
+import fr.diginamic.entity.Departement;
 import org.springframework.stereotype.Component;
 
 @Component

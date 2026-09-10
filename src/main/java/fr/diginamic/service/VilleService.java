@@ -1,8 +1,8 @@
-package fr.diginamic.services;
+package fr.diginamic.service;
 
-import fr.diginamic.entities.Departement;
-import fr.diginamic.entities.Ville;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.entity.Ville;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import fr.diginamic.repository.VilleRepository;
 import java.time.LocalDateTime;
 import java.util.List;

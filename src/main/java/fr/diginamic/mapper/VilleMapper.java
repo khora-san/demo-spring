@@ -1,8 +1,8 @@
 package fr.diginamic.mapper;
 
 import fr.diginamic.dto.VilleDto;
-import fr.diginamic.entities.Departement;
-import fr.diginamic.entities.Ville;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.entity.Ville;
 import org.springframework.stereotype.Component;
 
 @Component

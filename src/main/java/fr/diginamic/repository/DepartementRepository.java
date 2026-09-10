@@ -1,6 +1,6 @@
 package fr.diginamic.repository;
 
-import fr.diginamic.entities.Departement;
+import fr.diginamic.entity.Departement;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

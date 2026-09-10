@@ -1,10 +1,10 @@
-package fr.diginamic.services;
+package fr.diginamic.service;
 
 import fr.diginamic.dto.DepartementApiDto;
-import fr.diginamic.entities.Departement;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import fr.diginamic.repository.DepartementRepository;
-import fr.diginamic.utils.PropertiesFileUtils;
+import fr.diginamic.util.PropertiesFileUtils;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.List;

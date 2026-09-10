@@ -1,11 +1,11 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
 import fr.diginamic.dto.DepartementDto;
-import fr.diginamic.entities.Departement;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import fr.diginamic.mapper.DepartementMapper;
-import fr.diginamic.services.DepartementService;
-import fr.diginamic.utils.DepartementPdfExporter;
+import fr.diginamic.service.DepartementService;
+import fr.diginamic.util.DepartementPdfExporter;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.itextpdf.text.DocumentException;
-import fr.diginamic.entities.Ville;
-import fr.diginamic.services.VilleService;
+import fr.diginamic.entity.Ville;
+import fr.diginamic.service.VilleService;
 
 /**
  * Contrôleur REST exposant les opérations CRUD sur les départements. Traduit les échanges HTTP

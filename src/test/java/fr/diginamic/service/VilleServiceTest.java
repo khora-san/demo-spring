@@ -1,10 +1,10 @@
-package fr.diginamic.services;
+package fr.diginamic.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import fr.diginamic.entities.Ville;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Ville;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

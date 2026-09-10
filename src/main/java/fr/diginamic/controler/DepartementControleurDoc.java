@@ -1,7 +1,7 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
 import fr.diginamic.dto.DepartementDto;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * Contrat du contrôleur REST pour la gestion des départements, séparé de son implémentation

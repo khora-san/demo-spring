@@ -1,6 +1,6 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

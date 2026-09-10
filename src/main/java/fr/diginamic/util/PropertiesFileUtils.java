@@ -1,4 +1,4 @@
-package fr.diginamic.utils;
+package fr.diginamic.util;
 
 import java.io.File;
 import java.io.FileInputStream;

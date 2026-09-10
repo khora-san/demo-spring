@@ -1,4 +1,4 @@
-package fr.diginamic.entities;
+package fr.diginamic.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;

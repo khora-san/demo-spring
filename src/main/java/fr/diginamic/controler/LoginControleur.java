@@ -1,4 +1,4 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
 import fr.diginamic.dto.LoginRequest;
 import fr.diginamic.security.JwtUtil;

@@ -1,7 +1,7 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
 import fr.diginamic.dto.VilleDto;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

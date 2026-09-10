@@ -1,4 +1,4 @@
-package fr.diginamic.exceptions;
+package fr.diginamic.exception;
 
 public class ExceptionFonctionnelle extends Exception {
 

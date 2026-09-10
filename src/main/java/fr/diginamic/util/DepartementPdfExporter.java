@@ -1,4 +1,4 @@
-package fr.diginamic.utils;
+package fr.diginamic.util;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -12,8 +12,8 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import fr.diginamic.entities.Departement;
-import fr.diginamic.entities.Ville;
+import fr.diginamic.entity.Departement;
+import fr.diginamic.entity.Ville;
 import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.util.List;

@@ -1,11 +1,10 @@
-package fr.diginamic.controlers;
+package fr.diginamic.controler;
 
-import com.itextpdf.text.DocumentException;
 import fr.diginamic.dto.VilleDto;
-import fr.diginamic.entities.Ville;
-import fr.diginamic.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.entity.Ville;
+import fr.diginamic.exception.ExceptionFonctionnelle;
 import fr.diginamic.mapper.VilleMapper;
-import fr.diginamic.services.VilleService;
+import fr.diginamic.service.VilleService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;

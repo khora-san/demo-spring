@@ -1,4 +1,4 @@
-package fr.diginamic.services;
+package fr.diginamic.service;
 
 import org.springframework.stereotype.Service;
 
